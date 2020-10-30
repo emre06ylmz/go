@@ -7,6 +7,7 @@ import (
 )
 
 type Configuration struct {
+	DB_DRIVER   string
 	DB_USERNAME string
 	DB_PASSWORD string
 	DB_PORT     string

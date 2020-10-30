@@ -13,12 +13,40 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var configuration = new(Configuration)
+
 //User type
 type User struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+func main() {
+	readConfig()
+	fmt.Println("Rest API v2.0 - Mux Routers")
+	handleRequests()
+}
+
+func readConfig() {
+	configuration := GetConfig()
+	log.Fatal("configuration: " + configuration.DB_DRIVER)
+}
+
+func dbConn() (db *sql.DB) {
+	dbDriver := configuration.DB_DRIVER
+	dbUsername := configuration.DB_USERNAME
+	dbPassword := configuration.DB_PASSWORD
+	dbHost := configuration.DB_HOST
+	dbPort := configuration.DB_PORT
+	dbName := configuration.DB_NAME
+
+	db, err := sql.Open(dbDriver, dbUsername+":"+dbPassword+"@tcp("+dbHost+":"+dbPort+")@/"+dbName)
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -35,26 +63,6 @@ func handleRequests() {
 	myRouter.HandleFunc("/user/{id}", deleteUser).Methods("DELETE")
 	myRouter.HandleFunc("/user/{id}", returnSingleUser)
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
-}
-
-func main() {
-	fmt.Println("Rest API v2.0 - Mux Routers")
-	handleRequests()
-}
-
-func dbConn() (db *sql.DB) {
-	dbDriver := "mysql"
-	dbUsername := "root"
-	dbPassword := "12345"
-	dbHost := "localhost"
-	dbPort := "3306"
-	dbName := "sys"
-
-	db, err := sql.Open(dbDriver, dbUsername+":"+dbPassword+"@tcp("+dbHost+":"+dbPort+")@/"+dbName)
-	if err != nil {
-		panic(err.Error())
-	}
-	return db
 }
 
 func returnAllUsers(w http.ResponseWriter, r *http.Request) {
